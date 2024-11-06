@@ -4,7 +4,14 @@ from transformers import BertTokenizer, BertModel
 from ct_clip import CTCLIP
 from zero_shot import CTClipInference
 import accelerate
+import os
+import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+model_path = os.path.join(os.path.dirname(__file__), '../models/CT-CLIP_v2.pt')
+data_folder = os.path.join(os.path.dirname(__file__), '../Dataset_trial/data_volumes/dataset/train')
+reports_file = os.path.join(os.path.dirname(__file__), '../Dataset_trial/validation_reports.csv')
+labels = os.path.join(os.path.dirname(__file__), '../Dataset_trial/dataset_multi_abnormality_labels_valid_predicted_labels.csv')
 tokenizer = BertTokenizer.from_pretrained('microsoft/BiomedVLP-CXR-BERT-specialized',do_lower_case=True)
 text_encoder = BertModel.from_pretrained("microsoft/BiomedVLP-CXR-BERT-specialized")
 
@@ -36,13 +43,13 @@ clip = CTCLIP(
 
 )
 
-clip.load("path_to_pretrained_model")
+clip.load(model_path)
 
 inference = CTClipInference(
     clip,
-    data_folder = 'path_to_preprocessed_validation_folder',
-    reports_file= "path_to_validation_reports_csv",
-    labels = "path_to_validation_labels_csv",
+    data_folder = data_folder,
+    reports_file= reports_file,
+    labels = labels,
     batch_size = 1,
     results_folder="inference_zeroshot/",
     num_train_steps = 1,

@@ -12,7 +12,7 @@ from torch import nn
 from torch.utils.data import Dataset, DataLoader, random_split
 from torch.utils.data.distributed import DistributedSampler
 
-from data_inference_nii import CTReportDatasetinfer
+from data_inference import CTReportDatasetinfer
 #from data_external_valid import CTReportDatasetinfer
 import numpy as np
 import tqdm
@@ -25,6 +25,13 @@ from accelerate import DistributedDataParallelKwargs
 import math
 import torch.optim.lr_scheduler as lr_scheduler
 from ct_clip import CTCLIP
+
+import os
+import sys
+
+data_folder = os.path.join(os.path.dirname(__file__), '../Dataset_trial/data_volumes/dataset/train')
+reports_file = os.path.join(os.path.dirname(__file__), '../Dataset_trial/validation_reports.csv')
+
 
 
 # helpers
@@ -141,8 +148,8 @@ class CTClipInference(nn.Module):
         *,
         num_train_steps,
         batch_size,
-        data_folder: "external_valid",
-        reports_file: "data_reports.xslx",
+        data_folder: str,
+        reports_file: str,
         lr = 1e-4,
         wd = 0.,
         max_grad_norm = 0.5,
