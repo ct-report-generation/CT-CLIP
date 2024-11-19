@@ -2,6 +2,7 @@ from pathlib import Path
 from shutil import rmtree
 from transformer_maskgit.optimizer import get_optimizer
 from transformers import BertTokenizer, BertModel
+from transformer_maskgit import CTViT
 
 from eval import evaluate_internal, plot_roc, accuracy, sigmoid, bootstrap, compute_cis
 
@@ -29,7 +30,8 @@ from ct_clip import CTCLIP
 import os
 import sys
 
-data_folder = os.path.join(os.path.dirname(__file__), '../Dataset_trial/data_volumes/dataset/train')
+# data_folder = os.path.join(os.path.dirname(__file__), '../Dataset_trial/data_volumes/dataset/train')
+data_folder = os.path.join(os.path.dirname(__file__), '../Dataset_trial/npz_folder')
 reports_file = os.path.join(os.path.dirname(__file__), '../Dataset_trial/validation_reports.csv')
 
 
@@ -156,7 +158,7 @@ class CTClipInference(nn.Module):
         save_results_every = 100,
         save_model_every = 2000,
         results_folder = './results',
-        labels = "labels.csv",
+        labels = str,
         accelerate_kwargs: dict = dict()
     ):
         super().__init__()
@@ -181,10 +183,10 @@ class CTClipInference(nn.Module):
 
         # Split dataset into train and validation sets
 
-
+        # print(f"Number of samples in dataset: {self.ds.samples}")
         self.dl = DataLoader(
             self.ds,
-            num_workers=6,
+            num_workers=0,
             batch_size=1,
             shuffle = True,
         )
@@ -329,3 +331,4 @@ class CTClipInference(nn.Module):
             log_fn(logs)
 
         self.print('Inference complete')
+

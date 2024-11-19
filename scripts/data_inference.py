@@ -37,23 +37,30 @@ class CTReportDatasetinfer(Dataset):
     def prepare_samples(self):
         samples = []
         patient_folders = glob.glob(os.path.join(self.data_folder, '*'))
+        
+        # print(f"Patient folders found: {patient_folders}")  # Debugging
 
         # Read labels once outside the loop
         test_df = pd.read_csv(self.labels)
+        # print(f"Test DataFrame head: {test_df.head()}")  # Debugging
+
         test_label_cols = list(test_df.columns[1:])
         test_df['one_hot_labels'] = list(test_df[test_label_cols].values)
 
         for patient_folder in tqdm.tqdm(patient_folders):
             accession_folders = glob.glob(os.path.join(patient_folder, '*'))
+            # print(f"Accession folders: {accession_folders}")  # Debugging
 
             for accession_folder in accession_folders:
                 nii_files = glob.glob(os.path.join(accession_folder, '*.npz'))
+                # print(f"Nii files in {accession_folder}: {nii_files}")  # Debugging
 
                 for nii_file in nii_files:
-                    accession_number = nii_file.split("/")[-1]
+                    accession_number = os.path.basename(nii_file).replace(".npz", ".nii.gz")
+                    # print(f"Accession number: {accession_number}")  # Debugging
 
-                    accession_number = accession_number.replace(".npz", ".nii.gz")
                     if accession_number not in self.accession_to_text:
+                        print(f"{accession_number} not found in accession_to_text")  # Debugging
                         continue
 
                     impression_text = self.accession_to_text[accession_number]
@@ -62,20 +69,24 @@ class CTReportDatasetinfer(Dataset):
                         text = str(text)
                         if text == "Not given.":
                             text = ""
-
                         text_final = text_final + text
 
                     onehotlabels = test_df[test_df["VolumeName"] == accession_number]["one_hot_labels"].values
+                    # print(f"One-hot labels for {accession_number}: {onehotlabels}")  # Debugging
+
                     if len(onehotlabels) > 0:
                         samples.append((nii_file, text_final, onehotlabels[0]))
                         self.paths.append(nii_file)
+        
+        # print(f"Number of samples prepared: {len(samples)}")  # Final count
         return samples
+
 
     def __len__(self):
         return len(self.samples)
 
     def nii_img_to_tensor(self, path, transform):
-        img_data = np.load(path)['arr_0']
+        img_data = np.load(path)['data']
         img_data= np.transpose(img_data, (1, 2, 0))
         img_data = img_data*1000
         hu_min, hu_max = -1000, 200
